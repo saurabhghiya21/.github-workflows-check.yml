@@ -1,0 +1,29 @@
+name: AI Summit Registration Watcher
+
+on:
+  schedule:
+    - cron: "*/15 * * * *"
+  workflow_dispatch:
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check registration status
+        env:
+          ALERT_EMAIL: ${{ secrets.ALERT_EMAIL }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          PAGE=$(curl -s https://impact.indiaai.gov.in/registration)
+
+          if echo "$PAGE" | grep -q "Due to the overwhelming response and limited on-site capacity"; then
+            echo "Still oversubscribed."
+          else
+            echo "🚀 AI Summit India registration is OPEN!" | mail -s "🚀 AI Summit India Registration OPEN" "$ALERT_EMAIL"
+
+            curl -X PUT \
+              -H "Authorization: Bearer $GITHUB_TOKEN" \
+              -H "Accept: application/vnd.github+json" \
+              https://api.github.com/repos/${{ github.repository }}/actions/workflows/check.yml/disable
+          fi
