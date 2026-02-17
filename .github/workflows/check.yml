@@ -10,12 +10,13 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Check registration status
+      - name: Check AI Summit registration status
         run: |
-          PAGE=$(curl -s https://impact.indiaai.gov.in/registration)
+          PAGE=$(curl -sL https://impact.indiaai.gov.in/registration)
 
-          if echo "$PAGE" | grep -qi "currently oversubscribed"; then
-            echo "Still oversubscribed."
+          # When registration is closed, the page shows virtual participation link
+          if echo "$PAGE" | grep -qi "impact.indiaai.gov.in/sessions"; then
+            echo "Registration still oversubscribed (virtual-only mode)."
             exit 1
           else
             echo "🚀 REGISTRATION OPEN 🚀"
